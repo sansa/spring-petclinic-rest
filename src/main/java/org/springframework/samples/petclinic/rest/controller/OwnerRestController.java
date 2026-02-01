@@ -192,4 +192,29 @@ public class OwnerRestController implements OwnersApi {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    @Override
+    public ResponseEntity<List<OwnerSlimDto>> listOwnersSlim(String lastName) {
+        Collection<Owner> owners;
+
+        if (lastName != null) {
+            owners = this.clinicService.findOwnerByLastName(lastName);
+        } else {
+            owners = this.clinicService.findAllOwners();
+        }
+
+        List<OwnerSlimDto> result = owners.stream()
+            .map(o -> {
+                OwnerSlimDto dto = new OwnerSlimDto();
+                dto.setId(o.getId());
+                dto.setFirstName(o.getFirstName());
+                dto.setLastName(o.getLastName());
+                dto.setCity(o.getCity());
+                return dto;
+            })
+            .toList();
+
+        return ResponseEntity.ok(result);
+    }
+
 }

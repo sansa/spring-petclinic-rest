@@ -764,6 +764,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
 
+  /owners/slim:
+    get:
+      tags:
+        - owner
+      operationId: listOwnersSlim
+      summary: Lists pet owners (slim payload)
+      description: Returns an array of pet owners using a payload-efficient representation.
+      parameters:
+        - name: lastName
+          in: query
+          description: Last name.
+          required: false
+          schema:
+            type: string
+            example: Joof
+      responses:
+        200:
+          description: Owner details found and returned (slim).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OwnerSlim'
+        500:
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+
   /pets:
     get:
       tags:
@@ -1936,6 +1968,36 @@ components:
               readOnly: true
           required:
             - pets
+    OwnerSlim:
+      title: OwnerSlim
+      description: Slim representation of an owner (payload-efficient).
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - city
+      properties:
+        id:
+          title: ID
+          description: The ID of the pet owner.
+          type: integer
+          format: int32
+          minimum: 0
+          example: 1
+          readOnly: true
+        firstName:
+          title: First Name
+          type: string
+          example: Mbanyick
+        lastName:
+          title: Last Name
+          type: string
+          example: Joof
+        city:
+          title: City
+          type: string
+          example: Lappeenranta
     PetFields:
       title: Pet fields
       description: Editable fields of a pet.
