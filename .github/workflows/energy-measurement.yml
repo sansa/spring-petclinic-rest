@@ -64,6 +64,9 @@ jobs:
       - name: '[Phase 1] Measure energy — startup'
         run: python measure_energy.py startup --profile h2,spring-data-jpa
 
+      - name: '[Phase 1] Measure energy — endpoints'
+        run: python measure_energy.py endpoints --profile h2,spring-data-jpa --requests 200 --warmup 10
+
       # -----------------------------------------------------------------------
       - name: Run regression analysis
         id: regression
@@ -115,6 +118,7 @@ jobs:
           path: |
             codecarbon-results/tests_history.csv
             codecarbon-results/startup_history.csv
+            codecarbon-results/endpoints_history.csv
             energy-report.md
           retention-days: 90
 
@@ -145,6 +149,7 @@ jobs:
             echo "--- Baseline run $((i + 1)) / $RUNS ---"
             python measure_energy.py tests
             python measure_energy.py startup --profile h2,spring-data-jpa
+            python measure_energy.py endpoints --profile h2,spring-data-jpa --requests 200 --warmup 10
           done
 
       - name: '[Phase 2] Compute mean ± σ and commit baseline'
