@@ -33,10 +33,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import jakarta.transaction.Transactional;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 /**
  * A simple JDBC-based implementation of the {@link OwnerRepository} interface.
@@ -152,21 +150,58 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
      * @see #loadPetsAndVisits(Owner)
      */
     private void loadOwnersPetsAndVisits(List<Owner> owners) {
-        for (Owner owner : owners) {
-            loadPetsAndVisits(owner);
+        if (owners == null || owners.isEmpty()) {
+            return;
+        }
+
+        // Map owners by id for fast attachment
+        Map<Integer, Owner> ownersById = new HashMap<>();
+        List<Integer> ownerIds = new ArrayList<>();
+        for (Owner o : owners) {
+            ownersById.put(o.getId(), o);
+            ownerIds.add(o.getId());
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ids", ownerIds);
+
+        // One query for pets+visits for ALL owners
+        final List<JdbcPet> pets = this.namedParameterJdbcTemplate.query(
+            "SELECT pets.id as pets_id, name, birth_date, type_id, owner_id, " +
+                "visits.id as visit_id, visit_date, description, visits.pet_id as visits_pet_id " +
+                "FROM pets " +
+                "LEFT OUTER JOIN visits ON pets.id = visits.pet_id " +
+                "WHERE owner_id IN (:ids) " +
+                "ORDER BY owner_id, pets.id",
+            params,
+            new JdbcPetVisitExtractor()
+        );
+
+        Collection<PetType> petTypes = getPetTypes();
+
+        for (JdbcPet pet : pets) {
+            pet.setType(EntityUtils.getById(petTypes, PetType.class, pet.getTypeId()));
+
+            Owner owner = ownersById.get(pet.getOwnerId());
+            if (owner != null) {
+                owner.addPet(pet);
+            }
         }
     }
 
-	@Override
+
+    @Override
 	public Collection<Owner> findAll() throws DataAccessException {
 		List<Owner> owners = this.namedParameterJdbcTemplate.query(
 	            "SELECT id, first_name, last_name, address, city, telephone FROM owners",
 	            new HashMap<String, Object>(),
 	            BeanPropertyRowMapper.newInstance(Owner.class));
-		for (Owner owner : owners) {
-            loadPetsAndVisits(owner);
-        }
-	    return owners;
+//		for (Owner owner : owners) {
+//            loadPetsAndVisits(owner);
+//        }
+//	    return owners;
+        loadOwnersPetsAndVisits(owners);
+        return owners;
 	}
 
 	@Override
