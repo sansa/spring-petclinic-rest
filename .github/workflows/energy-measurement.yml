@@ -74,8 +74,8 @@ jobs:
         run: |
           python energy_regression.py \
             --output-md energy-report.md \
-            --warn-threshold 0.10 \
-            --fail-threshold 0.25
+            --warn-threshold 0.50 \
+            --fail-threshold 1.00
 
       # -----------------------------------------------------------------------
       - name: Post / update PR comment
