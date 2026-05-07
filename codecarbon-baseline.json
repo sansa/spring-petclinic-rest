@@ -1,0 +1,17 @@
+{
+  "petclinic-tests": {
+    "mean": 7.326879219278236e-05,
+    "std_dev": 1.4316241165269971e-05,
+    "n": 3,
+    "energy_consumed_mean": 0.0009256018620074075,
+    "energy_consumed_std_dev": 0.0001808565295392755
+  },
+  "petclinic-startup": {
+    "mean": 2.845500158352785e-05,
+    "std_dev": 1.575127631311587e-08,
+    "n": 3,
+    "energy_consumed_mean": 0.0003594709515592593,
+    "energy_consumed_std_dev": 1.9898527392197465e-07
+  },
+  "updated_at": "2026-05-07T11:46:08.122654+00:00"
+}
