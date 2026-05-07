@@ -4,15 +4,17 @@
 Measure energy consumption of Spring PetClinic REST using CodeCarbon.
 
 Modes:
-  startup  -- measures energy from process launch until the app is ready
-  load     -- starts the app, then measures energy while sending HTTP load
-  tests    -- measures energy during Maven test suite execution
+  startup    -- measures energy from process launch until the app is ready
+  load       -- starts the app, then measures energy while sending HTTP load
+  tests      -- measures energy during Maven test suite execution
+  endpoints  -- starts the app, then measures energy per individual endpoint
 
 Usage examples:
   python measure_energy.py startup
+  python measure_energy.py startup --profile h2,spring-data-jpa
   python measure_energy.py load --duration 120 --concurrency 8
   python measure_energy.py tests --test-filter OwnerRestControllerTests
-  python measure_energy.py startup --profile h2,spring-data-jpa
+  python measure_energy.py endpoints --requests 200 --warmup 20
 """
 
 import argparse
@@ -44,18 +46,43 @@ LOAD_ENDPOINTS = [
     "/api/specialties",
 ]
 
+# Endpoints measured individually in 'endpoints' mode.
+# IDs match the H2 seed data in src/main/resources/db/h2/data.sql.
+ENDPOINT_CATALOG = [
+    {"name": "list-owners",      "path": "/api/owners"},
+    {"name": "list-vets",        "path": "/api/vets"},
+    {"name": "list-pettypes",    "path": "/api/pettypes"},
+    {"name": "list-specialties", "path": "/api/specialties"},
+    {"name": "list-pets",        "path": "/api/pets"},
+    {"name": "list-visits",      "path": "/api/visits"},
+    {"name": "get-owner",        "path": "/api/owners/1"},
+    {"name": "get-vet",          "path": "/api/vets/1"},
+    {"name": "get-pettype",      "path": "/api/pettypes/1"},
+    {"name": "get-specialty",    "path": "/api/specialties/1"},
+    {"name": "get-pet",          "path": "/api/pets/1"},
+    {"name": "get-visit",        "path": "/api/visits/1"},
+    {"name": "search-owners",    "path": "/api/owners?lastName=Davis"},
+    {"name": "get-owner-pet",    "path": "/api/owners/6/pets/7"},
+]
+
 PROJECT_ROOT = Path(__file__).parent
 
-# Fixed columns for our own history CSVs — never changes, so no schema-drift backups.
+# Fixed-schema history CSVs written by this script.
+# Using our own files avoids CodeCarbon's schema-drift backups resetting data.
 _HISTORY_FIELDS = ["timestamp", "project_name", "emissions", "energy_consumed", "duration"]
+_ENDPOINT_HISTORY_FIELDS = [
+    "timestamp", "endpoint_name", "path",
+    "requests", "emissions", "energy_consumed", "duration", "energy_per_request",
+]
+
+
+# ---------------------------------------------------------------------------
+# History writers
+# ---------------------------------------------------------------------------
 
 
 def append_to_history(tracker: EmissionsTracker, output_dir: str) -> None:
-    """Append one row to {mode}_history.csv using data from tracker.final_emissions_data.
-
-    Bypasses CodeCarbon's own file management so multiple runs accumulate
-    reliably in a single fixed-schema file.
-    """
+    """Append one row to {mode}_history.csv from tracker.final_emissions_data."""
     d = tracker.final_emissions_data
     row = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -69,6 +96,33 @@ def append_to_history(tracker: EmissionsTracker, output_dir: str) -> None:
     write_header = not history_path.exists()
     with open(history_path, "a", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=_HISTORY_FIELDS)
+        if write_header:
+            writer.writeheader()
+        writer.writerow(row)
+
+
+def append_endpoint_to_history(
+    tracker: EmissionsTracker,
+    endpoint: dict,
+    n_requests: int,
+    output_dir: str,
+) -> None:
+    """Append one row to endpoints_history.csv for the given endpoint."""
+    d = tracker.final_emissions_data
+    row = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "endpoint_name": endpoint["name"],
+        "path": endpoint["path"],
+        "requests": n_requests,
+        "emissions": d.emissions,
+        "energy_consumed": d.energy_consumed,
+        "duration": d.duration,
+        "energy_per_request": d.energy_consumed / n_requests if n_requests else 0,
+    }
+    history_path = Path(output_dir) / "endpoints_history.csv"
+    write_header = not history_path.exists()
+    with open(history_path, "a", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=_ENDPOINT_HISTORY_FIELDS)
         if write_header:
             writer.writeheader()
         writer.writerow(row)
@@ -107,10 +161,9 @@ def wait_for_app(proc: subprocess.Popen, timeout: int = APP_READY_TIMEOUT) -> bo
     print(f"[measure_energy] Waiting for app at {HEALTH_URL} (timeout={timeout}s)...", flush=True)
     deadline = time.time() + timeout
     while time.time() < deadline:
-        # Fail fast if the process already died
         if proc.poll() is not None:
             print(
-                f"[measure_energy] ERROR: app process exited with code {proc.returncode} before becoming ready.",
+                f"[measure_energy] ERROR: app process exited with code {proc.returncode}.",
                 file=sys.stderr, flush=True,
             )
             return False
@@ -143,7 +196,7 @@ def stop_app(proc: subprocess.Popen) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Load generator
+# Load generator (load mode)
 # ---------------------------------------------------------------------------
 
 
@@ -256,6 +309,62 @@ def measure_tests(args: argparse.Namespace) -> None:
     sys.exit(result.returncode)
 
 
+def measure_endpoints(args: argparse.Namespace) -> None:
+    """Start the app, then measure energy for each endpoint individually.
+
+    For each endpoint:
+      1. Warmup requests (to heat JVM JIT and DB caches — not measured)
+      2. Measured requests with a dedicated CodeCarbon tracker
+      3. Result appended to endpoints_history.csv
+
+    measure_power_secs=1 is used so CodeCarbon samples frequently enough
+    for short per-endpoint measurement windows.
+    """
+    log_path = Path(args.output_dir) / "app-endpoints.log"
+    proc = start_app(args.profile, log_path)
+    try:
+        if not wait_for_app(proc):
+            print(f"[measure_energy] Check app log for details: {log_path}", flush=True)
+            sys.exit(1)
+
+        session = requests.Session()
+
+        # Global warmup — one pass over all endpoints to warm JVM JIT and H2 caches
+        print(f"[measure_energy] Global warmup ({args.warmup} rounds over all endpoints)...", flush=True)
+        for _ in range(args.warmup):
+            for ep in ENDPOINT_CATALOG:
+                session.get(f"{BASE_URL}{ep['path']}", timeout=10)
+
+        # Per-endpoint measurement
+        for ep in ENDPOINT_CATALOG:
+            url = f"{BASE_URL}{ep['path']}"
+            print(
+                f"[measure_energy] {ep['name']:20s}  {url}  "
+                f"({args.requests} requests) ...",
+                flush=True,
+            )
+
+            tracker = EmissionsTracker(
+                project_name=f"petclinic-endpoint-{ep['name']}",
+                output_dir=args.output_dir,
+                output_file=f"endpoint_{ep['name']}_emissions.csv",
+                measure_power_secs=1,   # sample every second for short windows
+                log_level="error",
+            )
+            tracker.start()
+            for _ in range(args.requests):
+                session.get(url, timeout=10)
+            tracker.stop()
+
+            append_endpoint_to_history(tracker, ep, args.requests, args.output_dir)
+
+            epr = tracker.final_emissions_data.energy_consumed / args.requests
+            print(f"  → energy/request: {epr:.3e} kWh", flush=True)
+
+    finally:
+        stop_app(proc)
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -270,23 +379,21 @@ def main() -> None:
 
     parser.add_argument(
         "mode",
-        choices=["startup", "load", "tests"],
+        choices=["startup", "load", "tests", "endpoints"],
         help="Measurement mode",
     )
     parser.add_argument(
         "--profile",
         default="postgres,spring-data-jpa",
-        help="Spring active profile(s) used when starting the app "
-             "(default: postgres,spring-data-jpa). "
-             "Not used in 'tests' mode (Maven picks up test profiles automatically).",
+        help="Spring active profile(s) for modes that start the app "
+             "(default: postgres,spring-data-jpa)",
     )
     parser.add_argument(
         "--output-dir",
         default="./codecarbon-results",
-        help="Directory for CodeCarbon CSV output (default: ./codecarbon-results)",
+        help="Directory for output CSVs (default: ./codecarbon-results)",
     )
 
-    # load-mode options
     load_group = parser.add_argument_group("load mode options")
     load_group.add_argument(
         "--duration",
@@ -301,13 +408,26 @@ def main() -> None:
         help="Number of concurrent request threads (default: 4)",
     )
 
-    # tests-mode options
     test_group = parser.add_argument_group("tests mode options")
     test_group.add_argument(
         "--test-filter",
         default=None,
         metavar="PATTERN",
-        help="Maven -Dtest filter, e.g. 'OwnerRestControllerTests' or 'Owner*'",
+        help="Maven -Dtest filter, e.g. 'OwnerRestControllerTests'",
+    )
+
+    ep_group = parser.add_argument_group("endpoints mode options")
+    ep_group.add_argument(
+        "--requests",
+        type=int,
+        default=200,
+        help="Requests per endpoint during measurement (default: 200)",
+    )
+    ep_group.add_argument(
+        "--warmup",
+        type=int,
+        default=10,
+        help="Warmup rounds over all endpoints before measuring (default: 10)",
     )
 
     args = parser.parse_args()
@@ -317,6 +437,7 @@ def main() -> None:
         "startup": measure_startup,
         "load": measure_load,
         "tests": measure_tests,
+        "endpoints": measure_endpoints,
     }
     dispatch[args.mode](args)
 
