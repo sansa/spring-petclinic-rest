@@ -1,1 +1,117 @@
-{}
+{
+  "petclinic-tests": {
+    "mean": 7.907310683181597e-05,
+    "std_dev": 5.037887992151973e-06,
+    "n": 3,
+    "energy_consumed_mean": 0.00021421225322779556,
+    "energy_consumed_std_dev": 1.3647842882959919e-05
+  },
+  "petclinic-startup": {
+    "mean": 2.65871679003158e-05,
+    "std_dev": 1.4491631532310244e-07,
+    "n": 3,
+    "energy_consumed_mean": 7.202571608809986e-05,
+    "energy_consumed_std_dev": 3.9258417531080084e-07
+  },
+  "endpoints": {
+    "list-owners": {
+      "mean_epr": 2.6938235553518238e-08,
+      "std_dev_epr": 1.289431528737513e-10,
+      "mean_emissions": 1.9887657645044338e-06,
+      "n": 3,
+      "path": "/api/owners"
+    },
+    "list-vets": {
+      "mean_epr": 2.3842338220185045e-08,
+      "std_dev_epr": 1.7139250171624655e-10,
+      "mean_emissions": 1.7602053372737239e-06,
+      "n": 3,
+      "path": "/api/vets"
+    },
+    "list-pettypes": {
+      "mean_epr": 2.252760518000016e-08,
+      "std_dev_epr": 4.7014463658650846e-11,
+      "mean_emissions": 1.663142704697514e-06,
+      "n": 3,
+      "path": "/api/pettypes"
+    },
+    "list-specialties": {
+      "mean_epr": 2.210410344148131e-08,
+      "std_dev_epr": 9.354004687779655e-11,
+      "mean_emissions": 1.6318768945407537e-06,
+      "n": 3,
+      "path": "/api/specialties"
+    },
+    "list-pets": {
+      "mean_epr": 2.3754779254878473e-08,
+      "std_dev_epr": 8.717570129920556e-11,
+      "mean_emissions": 1.7537411324362844e-06,
+      "n": 3,
+      "path": "/api/pets"
+    },
+    "list-visits": {
+      "mean_epr": 2.2288407712407382e-08,
+      "std_dev_epr": 3.4694174016456394e-11,
+      "mean_emissions": 1.645483503018934e-06,
+      "n": 3,
+      "path": "/api/visits"
+    },
+    "get-owner": {
+      "mean_epr": 2.2200148272674912e-08,
+      "std_dev_epr": 1.5079891466458014e-11,
+      "mean_emissions": 1.638967584343208e-06,
+      "n": 3,
+      "path": "/api/owners/1"
+    },
+    "get-vet": {
+      "mean_epr": 2.1088529730071607e-08,
+      "std_dev_epr": 1.2253614436197669e-10,
+      "mean_emissions": 1.5569002605080715e-06,
+      "n": 3,
+      "path": "/api/vets/1"
+    },
+    "get-pettype": {
+      "mean_epr": 2.105817587585004e-08,
+      "std_dev_epr": 1.1447163460745774e-10,
+      "mean_emissions": 1.5546593302891385e-06,
+      "n": 3,
+      "path": "/api/pettypes/1"
+    },
+    "get-specialty": {
+      "mean_epr": 2.1099113410848423e-08,
+      "std_dev_epr": 1.8933928372998973e-10,
+      "mean_emissions": 1.5576816205919402e-06,
+      "n": 3,
+      "path": "/api/specialties/1"
+    },
+    "get-pet": {
+      "mean_epr": 2.1080634423423503e-08,
+      "std_dev_epr": 2.2395259643600986e-10,
+      "mean_emissions": 1.5563173746865106e-06,
+      "n": 3,
+      "path": "/api/pets/1"
+    },
+    "get-visit": {
+      "mean_epr": 2.110120969037041e-08,
+      "std_dev_epr": 6.219978098779865e-11,
+      "mean_emissions": 1.5578363823593872e-06,
+      "n": 3,
+      "path": "/api/visits/1"
+    },
+    "search-owners": {
+      "mean_epr": 2.2475517144552522e-08,
+      "std_dev_epr": 2.7931096519238276e-11,
+      "mean_emissions": 1.6592972077854114e-06,
+      "n": 3,
+      "path": "/api/owners?lastName=Davis"
+    },
+    "get-owner-pet": {
+      "mean_epr": 2.18503474872418e-08,
+      "std_dev_epr": 3.425806235951328e-10,
+      "mean_emissions": 1.6131428852798994e-06,
+      "n": 3,
+      "path": "/api/owners/6/pets/7"
+    }
+  },
+  "updated_at": "2026-05-07T14:27:29.816005+00:00"
+}
