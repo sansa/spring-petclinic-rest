@@ -63,7 +63,12 @@ public class ClinicServiceImpl implements ClinicService {
     @Override
     @Transactional(readOnly = true)
     public Collection<Pet> findAllPets() throws DataAccessException {
-        return petRepository.findAll();
+        Collection<Pet> pets = petRepository.findAll();
+        // EXPERIMENT: moderate CPU work per request → targets list-pets into WARN zone (50-100% above baseline)
+        double acc = 0;
+        for (int i = 0; i < 600_000; i++) acc += Math.sqrt(i);
+        if (acc < 0) throw new IllegalStateException("unreachable");
+        return pets;
     }
 
     @Override
@@ -117,7 +122,12 @@ public class ClinicServiceImpl implements ClinicService {
     @Override
     @Transactional(readOnly = true)
     public Collection<Owner> findAllOwners() throws DataAccessException {
-        return ownerRepository.findAll();
+        Collection<Owner> owners = ownerRepository.findAll();
+        // EXPERIMENT: heavy CPU work per request → targets list-owners into FAIL zone (>100% above baseline)
+        double acc = 0;
+        for (int i = 0; i < 2_000_000; i++) acc += Math.sqrt(i);
+        if (acc < 0) throw new IllegalStateException("unreachable");
+        return owners;
     }
 
     @Override
@@ -222,7 +232,12 @@ public class ClinicServiceImpl implements ClinicService {
     @Override
     @Transactional(readOnly = true)
     public Collection<Owner> findOwnerByLastName(String lastName) throws DataAccessException {
-        return ownerRepository.findByLastName(lastName);
+        Collection<Owner> owners = ownerRepository.findByLastName(lastName);
+        // EXPERIMENT: moderate CPU work per request → targets search-owners into WARN zone (50-100% above baseline)
+        double acc = 0;
+        for (int i = 0; i < 800_000; i++) acc += Math.sqrt(i);
+        if (acc < 0) throw new IllegalStateException("unreachable");
+        return owners;
     }
 
     @Override
