@@ -129,17 +129,15 @@ jobs:
       # CSV are all from this CI job on this runner hardware.  The regression
       # script then averages those rows into a stable mean ± σ baseline.
       #
-      # Only executed when Phase 1 regression check PASSED (no regressions on
-      # the code being merged).
+      # Always runs on master pushes (regardless of Phase 1 outcome) to ensure
+      # the baseline stays calibrated to the current CI runner hardware.
+      # On manual dispatch, only runs when update_baseline is explicitly true.
       # =======================================================================
 
       - name: '[Phase 2] Capture baseline — run ${{ env.BASELINE_RUNS }}x measurements'
         if: |
-          steps.regression.outcome == 'success' &&
-          (
-            (github.event_name == 'push'             && github.ref == 'refs/heads/master') ||
-            (github.event_name == 'workflow_dispatch' && inputs.update_baseline == true)
-          )
+          (github.event_name == 'push'             && github.ref == 'refs/heads/master') ||
+          (github.event_name == 'workflow_dispatch' && inputs.update_baseline == true)
         run: |
           RUNS=${{ env.BASELINE_RUNS }}
           # Phase 1 already gave us 1 run; do (RUNS-1) more so we have RUNS total
@@ -154,11 +152,8 @@ jobs:
 
       - name: '[Phase 2] Compute mean ± σ and commit baseline'
         if: |
-          steps.regression.outcome == 'success' &&
-          (
-            (github.event_name == 'push'             && github.ref == 'refs/heads/master') ||
-            (github.event_name == 'workflow_dispatch' && inputs.update_baseline == true)
-          )
+          (github.event_name == 'push'             && github.ref == 'refs/heads/master') ||
+          (github.event_name == 'workflow_dispatch' && inputs.update_baseline == true)
         run: |
           python energy_regression.py \
             --update-baseline \
@@ -173,8 +168,9 @@ jobs:
 
       # -----------------------------------------------------------------------
       # Fail the job last — after comment and artifact upload have completed.
+      # Only fails on PRs — master pushes always recalibrate the baseline.
       - name: Fail on energy regression
-        if: steps.regression.outcome == 'failure'
+        if: steps.regression.outcome == 'failure' && github.event_name == 'pull_request'
         run: |
           echo "❌ Energy regression detected — see the report above or the PR comment."
           exit 1
