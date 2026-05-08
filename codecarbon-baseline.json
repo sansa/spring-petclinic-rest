@@ -1,117 +1,117 @@
 {
   "petclinic-tests": {
-    "mean": 7.789204107827924e-05,
-    "std_dev": 1.1724574988984593e-06,
+    "mean": 7.684311610713978e-05,
+    "std_dev": 2.1220945724053597e-06,
     "n": 3,
-    "energy_consumed_mean": 0.0002110126982031852,
-    "energy_consumed_std_dev": 3.176234913686343e-06
+    "energy_consumed_mean": 0.00020817111791707616,
+    "energy_consumed_std_dev": 5.748840258474867e-06
   },
   "petclinic-startup": {
-    "mean": 2.6770522074480655e-05,
-    "std_dev": 2.0357391159205958e-07,
+    "mean": 2.687461734924483e-05,
+    "std_dev": 2.295957191104719e-07,
     "n": 3,
-    "energy_consumed_mean": 7.252242998186546e-05,
-    "energy_consumed_std_dev": 5.514899824700579e-07
+    "energy_consumed_mean": 7.280442830279937e-05,
+    "energy_consumed_std_dev": 6.219841143553139e-07
   },
   "endpoints": {
     "list-owners": {
-      "mean_epr": 2.6779970050555412e-08,
-      "std_dev_epr": 1.1822380643478753e-10,
-      "mean_emissions": 1.977081516908884e-06,
+      "mean_epr": 2.7090200992377386e-08,
+      "std_dev_epr": 1.4937518983879197e-10,
+      "mean_emissions": 1.9999848980512666e-06,
       "n": 3,
       "path": "/api/owners"
     },
     "list-vets": {
-      "mean_epr": 2.3626872208518805e-08,
-      "std_dev_epr": 2.5394542894770203e-10,
-      "mean_emissions": 1.7442981548391206e-06,
+      "mean_epr": 2.37911644492376e-08,
+      "std_dev_epr": 1.3943773236460635e-10,
+      "mean_emissions": 1.756427337653122e-06,
       "n": 3,
       "path": "/api/vets"
     },
     "list-pettypes": {
-      "mean_epr": 2.251161648153575e-08,
-      "std_dev_epr": 2.693232693167843e-11,
-      "mean_emissions": 1.6619623090453257e-06,
+      "mean_epr": 2.2509118547823854e-08,
+      "std_dev_epr": 1.5886494232672813e-10,
+      "mean_emissions": 1.661777894403975e-06,
       "n": 3,
       "path": "/api/pettypes"
     },
     "list-specialties": {
-      "mean_epr": 2.2031388315185114e-08,
-      "std_dev_epr": 2.083085439367251e-10,
-      "mean_emissions": 1.6265085639590351e-06,
+      "mean_epr": 2.223386085182661e-08,
+      "std_dev_epr": 2.1769752561646516e-10,
+      "mean_emissions": 1.6414564787296587e-06,
       "n": 3,
       "path": "/api/specialties"
     },
     "list-pets": {
-      "mean_epr": 2.388771440760864e-08,
-      "std_dev_epr": 1.200954134265459e-10,
-      "mean_emissions": 1.7635553194168562e-06,
+      "mean_epr": 2.382939806907405e-08,
+      "std_dev_epr": 2.6851608431125086e-10,
+      "mean_emissions": 1.7592500063476902e-06,
       "n": 3,
       "path": "/api/pets"
     },
     "list-visits": {
-      "mean_epr": 2.223153883283309e-08,
-      "std_dev_epr": 5.999007786148988e-11,
-      "mean_emissions": 1.641285051322334e-06,
+      "mean_epr": 2.240065005296286e-08,
+      "std_dev_epr": 2.544865756907633e-10,
+      "mean_emissions": 1.6537700043297234e-06,
       "n": 3,
       "path": "/api/visits"
     },
     "get-owner": {
-      "mean_epr": 2.2013646298093295e-08,
-      "std_dev_epr": 5.126226745432734e-11,
-      "mean_emissions": 1.6251987262706918e-06,
+      "mean_epr": 2.2339731204814602e-08,
+      "std_dev_epr": 2.5075116066775146e-10,
+      "mean_emissions": 1.649272556107118e-06,
       "n": 3,
       "path": "/api/owners/1"
     },
     "get-vet": {
-      "mean_epr": 2.1088839916334585e-08,
-      "std_dev_epr": 5.951333534029467e-11,
-      "mean_emissions": 1.5569231605907144e-06,
+      "mean_epr": 2.1056501925555473e-08,
+      "std_dev_epr": 3.0646360444660436e-10,
+      "mean_emissions": 1.5545357477690177e-06,
       "n": 3,
       "path": "/api/vets/1"
     },
     "get-pettype": {
-      "mean_epr": 2.1066750460871463e-08,
-      "std_dev_epr": 8.900023713962706e-11,
-      "mean_emissions": 1.5552923651106495e-06,
+      "mean_epr": 2.1128644388603998e-08,
+      "std_dev_epr": 1.631501269411992e-10,
+      "mean_emissions": 1.5598618004124024e-06,
       "n": 3,
       "path": "/api/pettypes/1"
     },
     "get-specialty": {
-      "mean_epr": 2.094673066153113e-08,
-      "std_dev_epr": 1.488736317258103e-10,
-      "mean_emissions": 1.5464316783178367e-06,
+      "mean_epr": 2.0967994285411266e-08,
+      "std_dev_epr": 1.6477140584230485e-10,
+      "mean_emissions": 1.5480015052323758e-06,
       "n": 3,
       "path": "/api/specialties/1"
     },
     "get-pet": {
-      "mean_epr": 2.0879271256694964e-08,
-      "std_dev_epr": 1.6021783337530185e-10,
-      "mean_emissions": 1.541451361230421e-06,
+      "mean_epr": 2.1148414970604924e-08,
+      "std_dev_epr": 1.241006829244479e-10,
+      "mean_emissions": 1.5613214007098923e-06,
       "n": 3,
       "path": "/api/pets/1"
     },
     "get-visit": {
-      "mean_epr": 2.103306149684556e-08,
-      "std_dev_epr": 6.423807141910863e-11,
-      "mean_emissions": 1.5528052141551523e-06,
+      "mean_epr": 2.116233145185171e-08,
+      "std_dev_epr": 1.1556988195927028e-10,
+      "mean_emissions": 1.562348811039384e-06,
       "n": 3,
       "path": "/api/visits/1"
     },
     "search-owners": {
-      "mean_epr": 2.2421817141414346e-08,
-      "std_dev_epr": 1.1502495850148506e-10,
-      "mean_emissions": 1.655332704335183e-06,
+      "mean_epr": 2.2542825106851723e-08,
+      "std_dev_epr": 1.1342657222366132e-10,
+      "mean_emissions": 1.664266344343493e-06,
       "n": 3,
       "path": "/api/owners?lastName=Davis"
     },
     "get-owner-pet": {
-      "mean_epr": 2.1773683273389676e-08,
-      "std_dev_epr": 8.417667634709458e-11,
-      "mean_emissions": 1.607483005902542e-06,
+      "mean_epr": 2.1923792843148168e-08,
+      "std_dev_epr": 2.490886294929149e-10,
+      "mean_emissions": 1.6185651264321911e-06,
       "n": 3,
       "path": "/api/owners/6/pets/7"
     }
   },
-  "updated_at": "2026-05-08T13:18:48.358783+00:00"
+  "updated_at": "2026-05-08T13:30:39.034777+00:00"
 }
